@@ -47,7 +47,7 @@ void SFB_read(SFB* sfb,void* fs)
 	int s = fread(sfb, sizeof(SFB), 1, fs);
 	if (s != 1)
 	{
-		printf("[ERROR] SFB_open failed!\n");
+		printf("[ERROR] SFB_read failed!\n");
 		exit(EXIT_FAILURE);
 	}
 }

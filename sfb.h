@@ -33,14 +33,15 @@ typedef struct SFB
 #define SFB_CLOSE_SUCCESSFUL (2)
 
 
-FILE* SFB_open(const char* SFB_file);
-int SFB_read(SFB* sfb, FILE* fs);
-void SFB_print(SFB* sfb);
-void SFB_write(SFB* sfb, FILE* fs);
-int SFB_close(FILE* fs);
+FILE* SFB_open(const char*);
+int SFB_read(SFB*, FILE*);
+void SFB_print(SFB*);
+void SFB_write(SFB*, FILE*);
+int SFB_close(FILE*);
 
-FILE* SFB_open(const wchar_t* SFB_file);
-FILE* SFB_create(const wchar_t* filename, SFB* sfb);
+FILE* SFB_open(const wchar_t*);
+FILE* SFB_create(const wchar_t*, SFB*);
+
 
 FILE* SFB_open(const wchar_t* SFB_file)
 {
@@ -50,7 +51,6 @@ FILE* SFB_open(const wchar_t* SFB_file)
 	printf("[ERROR] SFB_open failed!\n");
 	return SFB_OPEN_FAIL;
 }
-
 
 FILE* SFB_open(const char* SFB_file)
 {

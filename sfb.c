@@ -37,7 +37,7 @@ int main(int argc, char* argv[])
 	if (argc < 2)
 	{
 		printf("Please specifiy sfb file!\n");
-		return;
+		return 0;
 	}
 	FILE* sfb_handle = SFB_open(argv[1]);
 	SFB sfb;

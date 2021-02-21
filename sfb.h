@@ -38,11 +38,12 @@ int SFB_read(SFB*, FILE*);
 void SFB_print(SFB*);
 void SFB_write(SFB*, FILE*);
 int SFB_close(FILE*);
-
+#ifdef _WIN32
 FILE* SFB_open(const wchar_t*);
 FILE* SFB_create(const wchar_t*, SFB*);
+#endif
 
-
+#ifdef _WIN32
 FILE* SFB_open(const wchar_t* SFB_file)
 {
 	FILE* file = _wfopen(SFB_file, L"r+");
@@ -51,6 +52,7 @@ FILE* SFB_open(const wchar_t* SFB_file)
 	printf("[ERROR] SFB_open failed!\n");
 	return SFB_OPEN_FAIL;
 }
+#endif
 
 FILE* SFB_open(const char* SFB_file)
 {
@@ -106,13 +108,13 @@ FILE* SFB_create(const char* filename, SFB* sfb)
 	FILE* fs = fopen(filename, "w");
 	return fs;
 }
-
+#ifdef _WIN32
 FILE* SFB_create(const wchar_t* filename, SFB* sfb)
 {
 	FILE* fs = _wfopen(filename, L"w");
 	return fs;
 }
-
+#endif
 
 void SFB_print(SFB* sfb)
 {

@@ -39,10 +39,8 @@ void SFB_print(SFB* sfb);
 void SFB_write(SFB* sfb, FILE* fs);
 int SFB_close(FILE* fs);
 
-#ifdef _WIN32
-	FILE* SFB_open(const wchar_t* SFB_file);
-	FILE* SFB_create(const wchar_t* filename, SFB* sfb);
-#endif
+FILE* SFB_open(const wchar_t* SFB_file);
+FILE* SFB_create(const wchar_t* filename, SFB* sfb);
 
 FILE* SFB_open(const wchar_t* SFB_file)
 {

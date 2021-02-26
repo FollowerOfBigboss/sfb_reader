@@ -33,16 +33,21 @@ typedef struct SFB
 #define SFB_CLOSE_FAIL		(-2)
 #define SFB_CLOSE_SUCCESSFUL (2)
 
+#ifdef _WIN32
 FILE* SFB_open_w(const wchar_t*);
+#endif
 FILE* SFB_open_a(const char*);
 int SFB_read(SFB*, FILE*);
 int SFB_close(FILE*);
 void SFB_set_defaults(SFB*);
 FILE* SFB_create_a(const char*, SFB*);
+#ifdef _WIN32
 FILE* SFB_create_w(const wchar_t*, SFB*);
+#endif
 void SFB_print(SFB*);
 void SFB_write(SFB*, FILE*);
 
+#ifdef _WIN32
 FILE* SFB_open_w(const wchar_t* SFB_file)
 {
 	FILE* file = _wfopen(SFB_file, L"r+");
@@ -51,6 +56,7 @@ FILE* SFB_open_w(const wchar_t* SFB_file)
 	printf("[ERROR] SFB_open failed!\n");
 	return SFB_OPEN_FAIL;
 }
+#endif
 
 FILE* SFB_open_a(const char* SFB_file)
 {
@@ -107,11 +113,13 @@ FILE* SFB_create_a(const char* filename, SFB* sfb)
 	return fs;
 }
 
+#ifdef _WIN32
 FILE* SFB_create_w(const wchar_t* filename, SFB* sfb)
 {
 	FILE* fs = _wfopen(filename, L"w");
 	return fs;
 }
+#endif
 
 void SFB_print(SFB* sfb)
 {

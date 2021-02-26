@@ -1,23 +1,23 @@
 #pragma comment(lib, "User32.lib")
 #pragma comment(lib, "Comdlg32.lib")
 #pragma comment(lib, "Gdi32.lib")
+#pragma comment(lib, "Shell32.lib")
 
-#include <iostream>
 #include <Windows.h>
 #include <string.h>
 
 #include "sfb.h"
 
-HWND window;
-HMENU Menubar;
-HMENU SMenu;
+static HWND window;
+static HMENU Menubar;
+static HMENU SMenu;
 wchar_t str[MAX_PATH];
 int created_new_file = 0;
-FILE* sfb_handle;
-SFB sfb;
+static FILE* sfb_handle;
+static SFB sfb;
 
-HWND EditControls[9];
-LPCWSTR static_texts[9] = { L"version", L"hybrid_flag", L"disc_content_data_offset", L"disc_content_data_lenght", L"disc_title_name", L"disc_title_data_offset", L"disc_title_data_lenght", L"disc_content", L"disc_title" };
+static HWND EditControls[9];
+const LPCWSTR static_texts[9] = { L"version", L"hybrid_flag", L"disc_content_data_offset", L"disc_content_data_lenght", L"disc_title_name", L"disc_title_data_offset", L"disc_title_data_lenght", L"disc_content", L"disc_title" };
 
 
 void CreateGuiApp();
@@ -170,7 +170,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
 
                 Release_avaible_handle(&sfb_handle);
 
-                sfb_handle = SFB_open(str);
+                sfb_handle = SFB_open_w(str);
 
                 if (sfb_handle == SFB_OPEN_FAIL)
                 {
@@ -227,7 +227,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
                 if (created_new_file == 1)
                 {
                     SaveFileDialog(hwnd, str);
-                    file = SFB_create(str, &sfb);
+                    file = SFB_create_w(str, &sfb);
                     
                     {
                         wchar_t tmp[MAX_PATH + 13] = L"SFB Editor - ";
@@ -243,7 +243,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
                 }
                 else
                 {
-                    file = SFB_open(str);
+                    file = SFB_open_w(str);
                 }
                 
                 SFB_write(&sfb, file);
@@ -261,7 +261,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
                 if (wcslen(SaveAs) == 0)
                     break;
 
-                FILE* file = SFB_create(SaveAs, &sfb);
+                FILE* file = SFB_create_w(SaveAs, &sfb);
                 SFB_write(&sfb, file);
                 SFB_close(file);
                 
@@ -301,7 +301,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
         
         Release_avaible_handle(&sfb_handle);
         
-        sfb_handle = SFB_open(str);
+        sfb_handle = SFB_open_w(str);
         SFB_read(&sfb, sfb_handle);
 
         if (strcmp(sfb.magic, "\x2E\x53\x46\x42") != 0)

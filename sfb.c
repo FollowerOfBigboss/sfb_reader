@@ -9,13 +9,8 @@
 	#include "Gui.h"
 #endif
 
-
-#include <stdint.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
 #include "sfb.h"
+
 int main(int argc, char* argv[])
 {
 #ifdef _WIN32
@@ -23,27 +18,20 @@ int main(int argc, char* argv[])
 	{
 		CreateGuiApp();
 		GuiAppRun();
+		return 0;
 	}
-	else
-	{
-		FILE* sfb_handle = SFB_open(argv[1]);
-		SFB sfb;
-		SFB_read(&sfb, sfb_handle);
-		SFB_print(&sfb);
-		SFB_close(sfb_handle);
-	}
-
 #else
 	if (argc < 2)
 	{
 		printf("Please specifiy sfb file!\n");
 		return 0;
 	}
-	FILE* sfb_handle = SFB_open(argv[1]);
+#endif
+
+	FILE* sfb_handle = SFB_open_a(argv[1]);
 	SFB sfb;
 	SFB_read(&sfb, sfb_handle);
 	SFB_print(&sfb);
 	SFB_close(sfb_handle);
-#endif
 	return 0;
 }

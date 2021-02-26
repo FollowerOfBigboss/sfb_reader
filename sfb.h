@@ -1,10 +1,13 @@
-#pragma once
+#ifndef _SFB_H_
+#define _SFB_H_
+
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 
 #define REV(n) ((n << 24) | (((n>>16)<<24)>>16) | (((n<<16)>>24)<<16) | (n>>24)) 
+
 typedef struct SFB
 {
 	char magic[4];
@@ -25,26 +28,22 @@ typedef struct SFB
 }SFB;
 
 #define SFB_OPEN_FAIL		(NULL)
-
 #define SFB_READ_FAIL		(-1)
 #define SFB_READ_SUCCESSFUL (1)
-
 #define SFB_CLOSE_FAIL		(-2)
 #define SFB_CLOSE_SUCCESSFUL (2)
 
-
-FILE* SFB_open(const char*);
+FILE* SFB_open_w(const wchar_t*);
+FILE* SFB_open_a(const char*);
 int SFB_read(SFB*, FILE*);
+int SFB_close(FILE*);
+void SFB_set_defaults(SFB*);
+FILE* SFB_create_a(const char*, SFB*);
+FILE* SFB_create_w(const wchar_t*, SFB*);
 void SFB_print(SFB*);
 void SFB_write(SFB*, FILE*);
-int SFB_close(FILE*);
-#ifdef _WIN32
-FILE* SFB_open(const wchar_t*);
-FILE* SFB_create(const wchar_t*, SFB*);
-#endif
 
-#ifdef _WIN32
-FILE* SFB_open(const wchar_t* SFB_file)
+FILE* SFB_open_w(const wchar_t* SFB_file)
 {
 	FILE* file = _wfopen(SFB_file, L"r+");
 	if (file != NULL)
@@ -52,9 +51,8 @@ FILE* SFB_open(const wchar_t* SFB_file)
 	printf("[ERROR] SFB_open failed!\n");
 	return SFB_OPEN_FAIL;
 }
-#endif
 
-FILE* SFB_open(const char* SFB_file)
+FILE* SFB_open_a(const char* SFB_file)
 {
 	FILE* file = fopen(SFB_file, "r");
 	if (file != NULL)
@@ -103,18 +101,17 @@ void SFB_set_defaults(SFB* sfb)
 	memset(sfb->unknown_zeroes4, 0, 0x3D0);
 }
 
-FILE* SFB_create(const char* filename, SFB* sfb)
+FILE* SFB_create_a(const char* filename, SFB* sfb)
 {
 	FILE* fs = fopen(filename, "w");
 	return fs;
 }
-#ifdef _WIN32
-FILE* SFB_create(const wchar_t* filename, SFB* sfb)
+
+FILE* SFB_create_w(const wchar_t* filename, SFB* sfb)
 {
 	FILE* fs = _wfopen(filename, L"w");
 	return fs;
 }
-#endif
 
 void SFB_print(SFB* sfb)
 {
@@ -133,3 +130,5 @@ void SFB_write(SFB* sfb, FILE* fs)
 {
 	fwrite(sfb, sizeof(SFB), 1, fs);
 }
+
+#endif

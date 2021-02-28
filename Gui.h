@@ -161,10 +161,9 @@ LRESULT CALLBACK WindowProc(HWND hwnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
                 OpenFileDialog(hwnd);
 
                 created_new_file = 0;
-                // it cancelled likely
+                /* it cancelled likely */
                 if (wcslen(str) == 0)
                 {
-                    // __debugbreak();
                     break;
                 }
 
@@ -189,7 +188,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
 
                 {
                     wchar_t ws[MAX_PATH + 13] = L"SFB Editor - ";
-                    wcscat(ws, str);
+                    _snwprintf(ws, MAX_PATH + 13, L"SFB Editor - %ls", str);
                     SetWindowTitle(hwnd, ws);
                 }
 
@@ -230,11 +229,11 @@ LRESULT CALLBACK WindowProc(HWND hwnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
                     file = SFB_create_w(str, &sfb);
                     
                     {
-                        wchar_t tmp[MAX_PATH + 13] = L"SFB Editor - ";
-                        wcscat(tmp, str);
+                        wchar_t tmp[MAX_PATH + 13];
+                        _snwprintf(tmp, MAX_PATH + 13, L"SFB Editor - %ls", str);
                         SetWindowTitle(hwnd, tmp);
                     }
-                    
+                    created_new_file = 0;
                 }
                 else if (wcslen(str) == 0)
                 {
@@ -253,18 +252,20 @@ LRESULT CALLBACK WindowProc(HWND hwnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
 
             case M_SAVEAS:
             {
-                wchar_t SaveAs[MAX_PATH] = L"";
-                CopyBoxInfosToStruct();
-                SaveFileDialog(hwnd, SaveAs);
-                
-                /* Cancelled */
-                if (wcslen(SaveAs) == 0)
-                    break;
+                if (wcslen(str) > 0)
+                {
+                    wchar_t SaveAs[MAX_PATH] = L"";
+                    CopyBoxInfosToStruct();
+                    SaveFileDialog(hwnd, SaveAs);
 
-                FILE* file = SFB_create_w(SaveAs, &sfb);
-                SFB_write(&sfb, file);
-                SFB_close(file);
-                
+                    /* Cancelled */
+                    if (wcslen(SaveAs) == 0)
+                        break;
+
+                    FILE* file = SFB_create_w(SaveAs, &sfb);
+                    SFB_write(&sfb, file);
+                    SFB_close(file);
+                }
                 break;
             }
 
@@ -312,7 +313,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
 
         {
             wchar_t ws[MAX_PATH + 13] = L"SFB Editor - ";
-            wcscat(ws, str);
+            _snwprintf(ws, MAX_PATH + 13, L"SFB Editor - %ls", str);
             SetWindowTitle(hwnd, ws);
         }
 

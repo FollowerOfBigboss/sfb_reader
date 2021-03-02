@@ -1,4 +1,4 @@
-Another simple sfb reader for PS3's PS3_DISC.SFB file
+Another simple sfb reader for PS3's PS3_DISC.SFB file  
 Also you can look pink1stools' s editor in [here](https://github.com/pink1stools/PS3_DISC.SFB-Editor)
 
 

@@ -35,15 +35,14 @@ typedef struct SFB
 
 #ifdef _WIN32
 FILE* SFB_open_w(const wchar_t*);
+FILE* SFB_create_w(const wchar_t*, SFB*);
 #endif
+
 FILE* SFB_open_a(const char*);
 int SFB_read(SFB*, FILE*);
 int SFB_close(FILE*);
 void SFB_set_defaults(SFB*);
 FILE* SFB_create_a(const char*, SFB*);
-#ifdef _WIN32
-FILE* SFB_create_w(const wchar_t*, SFB*);
-#endif
 void SFB_print(SFB*);
 void SFB_write(SFB*, FILE*);
 
@@ -56,6 +55,13 @@ FILE* SFB_open_w(const wchar_t* SFB_file)
 	printf("[ERROR] SFB_open failed!\n");
 	return SFB_OPEN_FAIL;
 }
+
+FILE* SFB_create_w(const wchar_t* filename, SFB* sfb)
+{
+	FILE* fs = _wfopen(filename, L"w");
+	return fs;
+}
+
 #endif
 
 FILE* SFB_open_a(const char* SFB_file)
@@ -81,7 +87,7 @@ int SFB_read(SFB* sfb, FILE* fs)
 int SFB_close(FILE* fs)
 {
 	int fsr = fclose(fs);
-	if (fsr != NULL)
+	if (fsr == EOF)
 	{
 		return SFB_CLOSE_FAIL;
 	}
@@ -112,14 +118,6 @@ FILE* SFB_create_a(const char* filename, SFB* sfb)
 	FILE* fs = fopen(filename, "w");
 	return fs;
 }
-
-#ifdef _WIN32
-FILE* SFB_create_w(const wchar_t* filename, SFB* sfb)
-{
-	FILE* fs = _wfopen(filename, L"w");
-	return fs;
-}
-#endif
 
 void SFB_print(SFB* sfb)
 {

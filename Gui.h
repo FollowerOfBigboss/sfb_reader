@@ -11,13 +11,23 @@
 static HWND window;
 static HMENU Menubar;
 static HMENU SMenu;
-wchar_t str[MAX_PATH];
-int created_new_file = 0;
+static wchar_t str[MAX_PATH];
+static int created_new_file = 0;
 static FILE* sfb_handle;
 static SFB sfb;
 
 static HWND EditControls[9];
-const LPCWSTR static_texts[9] = { L"version", L"hybrid_flag", L"disc_content_data_offset", L"disc_content_data_lenght", L"disc_title_name", L"disc_title_data_offset", L"disc_title_data_lenght", L"disc_content", L"disc_title" };
+const LPCWSTR static_texts[9] = { 
+    L"version", 
+    L"hybrid_flag", 
+    L"disc_content_data_offset", 
+    L"disc_content_data_lenght", 
+    L"disc_title_name", 
+    L"disc_title_data_offset", 
+    L"disc_title_data_lenght", 
+    L"disc_content", 
+    L"disc_title" 
+};
 
 
 void CreateGuiApp();
@@ -44,8 +54,8 @@ void CreateGuiApp()
     wcexw.cbSize = sizeof(WNDCLASSEXW);
     wcexw.style = (CS_HREDRAW | CS_VREDRAW);
     wcexw.lpfnWndProc = WindowProc;
-    wcexw.cbClsExtra = NULL;
-    wcexw.cbWndExtra = NULL;
+    wcexw.cbClsExtra = 0;
+    wcexw.cbWndExtra = 0;
     wcexw.hInstance = GetModuleHandleW(NULL);
     wcexw.hIcon = NULL;
     wcexw.hCursor = NULL;
@@ -63,7 +73,7 @@ void CreateGuiApp()
 void GuiAppRun()
 {
     MSG msg;
-    while (GetMessageW(&msg, window, NULL, NULL) > 0)
+    while (GetMessageW(&msg, window, 0, 0) > 0)
     {
         TranslateMessage(&msg);
         DispatchMessageW(&msg);
@@ -264,7 +274,12 @@ LRESULT CALLBACK WindowProc(HWND hwnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
 
                     FILE* file = SFB_create_w(SaveAs, &sfb);
                     SFB_write(&sfb, file);
-                    SFB_close(file);
+
+                    if (SFB_close(file) != SFB_CLOSE_SUCCESSFUL)
+                    {
+                        printf("Failed while closing file!\n");
+                        __debugbreak();
+                    }
                 }
                 break;
             }
@@ -288,7 +303,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
             case M_EXIT:
             {
                 /* Just post WM_CLOSE message */
-                PostMessageW(hwnd, WM_CLOSE, NULL, NULL);
+                PostMessageW(hwnd, WM_CLOSE, 0, 0);
                 break;
             }
         }
@@ -369,7 +384,7 @@ void OpenFileDialog(HWND handle)
     opfw.lStructSize = sizeof(OPENFILENAMEW);
     opfw.hwndOwner = handle;
     opfw.hInstance = GetModuleHandleW(NULL);
-    opfw.lpstrFilter = L"PS3_DISC.SFB\0\*.sfb\0All files\0\*.*\0";
+    opfw.lpstrFilter = L"PS3_DISC.SFB\0*.sfb\0All files\0*.*\0";
     opfw.lpstrFile = str;
     opfw.nMaxFile = MAX_PATH;
     GetOpenFileNameW(&opfw);
@@ -382,7 +397,7 @@ void SaveFileDialog(HWND handle, wchar_t* wstr)
     opfw.lStructSize = sizeof(OPENFILENAMEW);
     opfw.hwndOwner = handle;
     opfw.hInstance = GetModuleHandleW(NULL);
-    opfw.lpstrFilter = L"PS3_DISC.SFB\0\*.sfb\0All files\0\*.*\0";
+    opfw.lpstrFilter = L"PS3_DISC.SFB\0*.sfb\0All files\0*.*\0";
     opfw.lpstrFile = wstr;
     opfw.nMaxFile = MAX_PATH;
     opfw.Flags = OFN_OVERWRITEPROMPT;
@@ -399,7 +414,6 @@ void CreateLabel(HWND hwnd, LPCWSTR s, int x, int y, int width, int height)
     CreateWindowExW(0L, L"STATIC", s, WS_CHILD | WS_VISIBLE, x, y, width, height, hwnd, NULL, GetModuleHandleW(NULL), NULL);
 }
 
-
 void CopyBoxInfosToStruct()
 {
     char Text[20];
@@ -413,16 +427,13 @@ void CopyBoxInfosToStruct()
     GetWindowTextA(EditControls[1], Text, 20);
     strcpy(sfb.hybrid_flag, Text);
 
-
     GetWindowTextA(EditControls[2], Text, 20);
     test = (uint32_t)strtol(Text, NULL, 0);
     sfb.disc_content_data_offset = REV(test);
 
-
     GetWindowTextA(EditControls[3], Text, 20);
     test = (uint32_t)strtol(Text, NULL, 0);
     sfb.disc_content_data_lenght = REV(test);
-
 
     GetWindowTextA(EditControls[4], Text, 20);
     strcpy(sfb.disc_title_name, Text);
@@ -444,7 +455,10 @@ void CopyBoxInfosToStruct()
 
 void SetWindowTitle(HWND handle, const wchar_t* titlestr)
 {
-    SetWindowTextW(handle, titlestr);
+    if (SetWindowTextW(handle, titlestr) == FALSE)
+    {
+        __debugbreak();
+    }
 }
 
 void Release_avaible_handle(FILE** sfb_handle)

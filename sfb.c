@@ -28,10 +28,29 @@ int main(int argc, char* argv[])
 	}
 #endif
 
-	FILE* sfb_handle = SFB_open_a(argv[1]);
 	SFB sfb;
-	SFB_read(&sfb, sfb_handle);
+	FILE* sfb_handle = SFB_open_a(argv[1]);
+
+	if (sfb_handle == SFB_OPEN_FAIL)
+	{
+		printf("Failed while opening file!\n");
+		return 1;
+	}
+
+	
+	if (SFB_read(&sfb, sfb_handle) == SFB_READ_FAIL)
+	{
+		printf("Failed while reading file!\n");
+		return 1;
+	}
+
 	SFB_print(&sfb);
-	SFB_close(sfb_handle);
+	
+	if (SFB_close(sfb_handle) == SFB_CLOSE_FAIL)
+	{
+		printf("Failed while closing file!\n");
+		return 1;
+	}
+
 	return 0;
 }

@@ -6,7 +6,7 @@
 
 #ifdef _WIN32
 	#define _CRT_SECURE_NO_WARNINGS
-	#include "Gui.h"
+	#include "wingui.h"
 #endif
 
 #include "sfb.h"
@@ -31,14 +31,14 @@ int main(int argc, char* argv[])
 	SFB sfb;
 	FILE* sfb_handle = SFB_open_a(argv[1]);
 
-	if (sfb_handle == SFB_OPEN_FAIL)
+	if (sfb_handle == SFB_FAIL)
 	{
 		printf("Failed while opening file!\n");
 		return 1;
 	}
 
 	
-	if (SFB_read(&sfb, sfb_handle) == SFB_READ_FAIL)
+	if (SFB_read(&sfb, sfb_handle) == SFB_FAIL)
 	{
 		printf("Failed while reading file!\n");
 		return 1;
@@ -46,7 +46,7 @@ int main(int argc, char* argv[])
 
 	SFB_print(&sfb);
 	
-	if (SFB_close(sfb_handle) == SFB_CLOSE_FAIL)
+	if (SFB_close(sfb_handle) == SFB_FAIL)
 	{
 		printf("Failed while closing file!\n");
 		return 1;

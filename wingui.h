@@ -1,8 +1,3 @@
-#pragma comment(lib, "User32.lib")
-#pragma comment(lib, "Comdlg32.lib")
-#pragma comment(lib, "Gdi32.lib")
-#pragma comment(lib, "Shell32.lib")
-
 #include <Windows.h>
 #include <string.h>
 
@@ -104,7 +99,8 @@ LRESULT CALLBACK WindowProc(HWND hwnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
         CreateWindowExW(0L, L"BUTTON", L"Save", WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON, 380, 408, 100, 30, hwnd, (HMENU)M_SAVE, GetModuleHandleW(NULL), NULL);
 
         int st = 50;
-        for (int i = 0; i < 9; i++)
+		int i;
+        for (i = 0; i < 9; i++)
         {
             CreateLabel(hwnd, static_texts[i], 0, st, 200, 20);
             EditControls[i] = CreateEditControl(hwnd, L"", 200, st, 200, 25);
@@ -170,18 +166,18 @@ LRESULT CALLBACK WindowProc(HWND hwnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
             {
                 OpenFileDialog(hwnd);
 
-                created_new_file = 0;
                 /* it cancelled likely */
                 if (wcslen(str) == 0)
                 {
                     break;
                 }
 
+                created_new_file = 0;
                 Release_avaible_handle(&sfb_handle);
 
                 sfb_handle = SFB_open_w(str);
 
-                if (sfb_handle == SFB_OPEN_FAIL)
+                if (sfb_handle == SFB_FAIL)
                 {
                     MessageBoxW(hwnd, L"Error occurred while opening file!", L"Error", MB_OK | MB_ICONERROR);
                     break;
@@ -236,6 +232,9 @@ LRESULT CALLBACK WindowProc(HWND hwnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
                 if (created_new_file == 1)
                 {
                     SaveFileDialog(hwnd, str);
+                    if (wcslen(str) == 0)
+                        break;
+
                     file = SFB_create_w(str, &sfb);
                     
                     {
@@ -275,7 +274,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
                     FILE* file = SFB_create_w(SaveAs, &sfb);
                     SFB_write(&sfb, file);
 
-                    if (SFB_close(file) != SFB_CLOSE_SUCCESSFUL)
+                    if (SFB_close(file) != SFB_SUCCESSFUL)
                     {
                         printf("Failed while closing file!\n");
                         __debugbreak();

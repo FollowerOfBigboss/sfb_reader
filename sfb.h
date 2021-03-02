@@ -27,11 +27,8 @@ typedef struct SFB
 	char unknown_zeroes4[0x3D0];
 }SFB;
 
-#define SFB_OPEN_FAIL		(NULL)
-#define SFB_READ_FAIL		(-1)
-#define SFB_READ_SUCCESSFUL (1)
-#define SFB_CLOSE_FAIL		(-2)
-#define SFB_CLOSE_SUCCESSFUL (2)
+#define SFB_FAIL		0
+#define SFB_SUCCESSFUL	1
 
 #ifdef _WIN32
 FILE* SFB_open_w(const wchar_t*);
@@ -44,16 +41,17 @@ int SFB_close(FILE*);
 void SFB_set_defaults(SFB*);
 FILE* SFB_create_a(const char*, SFB*);
 void SFB_print(SFB*);
-void SFB_write(SFB*, FILE*);
+int SFB_write(SFB*, FILE*);
 
 #ifdef _WIN32
 FILE* SFB_open_w(const wchar_t* SFB_file)
 {
 	FILE* file = _wfopen(SFB_file, L"r+");
 	if (file != NULL)
+	{
 		return file;
-	printf("[ERROR] SFB_open failed!\n");
-	return SFB_OPEN_FAIL;
+	}
+	return SFB_FAIL;
 }
 
 FILE* SFB_create_w(const wchar_t* filename, SFB* sfb)
@@ -68,9 +66,10 @@ FILE* SFB_open_a(const char* SFB_file)
 {
 	FILE* file = fopen(SFB_file, "r");
 	if (file != NULL)
+	{
 		return file;
-	printf("[ERROR] SFB_open failed!\n");
-	return SFB_OPEN_FAIL;
+	}
+	return SFB_FAIL;
 }
 
 int SFB_read(SFB* sfb, FILE* fs)
@@ -78,10 +77,9 @@ int SFB_read(SFB* sfb, FILE* fs)
 	int s = fread(sfb, sizeof(SFB), 1, fs);
 	if (s != 1)
 	{
-		printf("[ERROR] SFB_read failed!\n");
-		return SFB_READ_FAIL;
+			return SFB_FAIL;
 	}
-	return SFB_READ_SUCCESSFUL;
+	return SFB_SUCCESSFUL;
 }
 
 int SFB_close(FILE* fs)
@@ -89,9 +87,9 @@ int SFB_close(FILE* fs)
 	int fsr = fclose(fs);
 	if (fsr == EOF)
 	{
-		return SFB_CLOSE_FAIL;
+		return SFB_FAIL;
 	}
-	return SFB_CLOSE_SUCCESSFUL;
+	return SFB_SUCCESSFUL;
 }
 
 void SFB_set_defaults(SFB* sfb)
@@ -132,9 +130,14 @@ void SFB_print(SFB* sfb)
 	printf("Disc Title: %s\n", sfb->disc_title);
 }
 
-void SFB_write(SFB* sfb, FILE* fs)
+int SFB_write(SFB* sfb, FILE* fs)
 {
-	fwrite(sfb, sizeof(SFB), 1, fs);
+	int fw = fwrite(sfb, sizeof(SFB), 1, fs);
+	if (fw != 1)
+	{
+		return SFB_FAIL;
+	}
+	return SFB_SUCCESSFUL;
 }
 
 #endif

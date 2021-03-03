@@ -3,6 +3,29 @@
 
 #include "sfb.h"
 
+/* #define DEBUG */ 
+
+#ifdef DEBUG
+#define DEBUG_ASSERT(message) {\
+wchar_t wmsg[sizeof(message)]; \
+_snwprintf(wmsg, sizeof(wmsg), L"FILE: %ls\nLINE: %d\nFUNC: %ls\nMESSAGE: %ls",__FILEW__, __LINE__, __FUNCTIONW__, message); \
+MessageBoxW(NULL, wmsg, L"Error", MB_ICONERROR | MB_OK); \
+__debugbreak(); \
+}
+#else
+#define DEBUG_ASSERT(message) {\
+wchar_t wmsg[sizeof(message)]; \
+_snwprintf(wmsg, sizeof(wmsg), L"FILE: %ls\nLINE: %d\nFUNC: %ls\nMESSAGE: %ls",__FILEW__, __LINE__, __FUNCTIONW__, message); \
+MessageBoxW(NULL, wmsg, L"Error", MB_ICONERROR | MB_OK); \
+}
+#endif
+
+/* Error messages */
+#define ERROR_CREATE_MESSAGE    L"Error occurred while creating file!"
+#define ERROR_OPEN_MESSAGE      L"Error occurred while opening file!"
+#define ERROR_WRITE_MESSAGE     L"Error occurred while writing file!"
+#define ERROR_CLOSE_MESSAGE     L"Error occurred while closing file!"
+
 static HWND window;
 static HMENU Menubar;
 static HMENU SMenu;
@@ -179,21 +202,25 @@ LRESULT CALLBACK WindowProc(HWND hwnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
 
                 if (sfb_handle == SFB_FAIL)
                 {
-                    MessageBoxW(hwnd, L"Error occurred while opening file!", L"Error", MB_OK | MB_ICONERROR);
+                    DEBUG_ASSERT(ERROR_OPEN_MESSAGE);
                     break;
                 }
 
-                SFB_read(&sfb, sfb_handle);
+                if (SFB_read(&sfb, sfb_handle) == SFB_FAIL)
+                {
+                    DEBUG_ASSERT(L"Error occurred while reading!");
+                    break;
+                }
 
                 if (strcmp(sfb.magic, "\x2E\x53\x46\x42") != 0)
                 {
-                    MessageBoxW(hwnd, L"Magic didn't match!", L"Error", MB_ICONERROR | MB_OK);
+                    MessageBoxW(hwnd,L"Magic didn't match!", L"Error", MB_OK | MB_ICONWARNING);
                     Release_avaible_handle(&sfb_handle);
                     break;
                 }
 
                 {
-                    wchar_t ws[MAX_PATH + 13] = L"SFB Editor - ";
+                    wchar_t ws[MAX_PATH + 13];
                     _snwprintf(ws, MAX_PATH + 13, L"SFB Editor - %ls", str);
                     SetWindowTitle(hwnd, ws);
                 }
@@ -236,6 +263,12 @@ LRESULT CALLBACK WindowProc(HWND hwnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
                         break;
 
                     file = SFB_create_w(str, &sfb);
+
+                    if (file == SFB_FAIL)
+                    {
+                        DEBUG_ASSERT(ERROR_CREATE_MESSAGE);
+                        break;
+                    }
                     
                     {
                         wchar_t tmp[MAX_PATH + 13];
@@ -252,10 +285,23 @@ LRESULT CALLBACK WindowProc(HWND hwnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
                 else
                 {
                     file = SFB_open_w(str);
+                    if (file == SFB_FAIL)
+                    {
+                        DEBUG_ASSERT(ERROR_OPEN_MESSAGE);
+                        break;
+                    }
                 }
                 
-                SFB_write(&sfb, file);
-                SFB_close(file);
+                if (SFB_write(&sfb, file) == SFB_FAIL)
+                {
+                    DEBUG_ASSERT(ERROR_WRITE_MESSAGE);
+                    break;
+                }
+                
+                if (SFB_close(file) == SFB_FAIL)
+                {
+                    DEBUG_ASSERT(ERROR_CLOSE_MESSAGE);
+                }
                 break;
             }
 
@@ -272,12 +318,22 @@ LRESULT CALLBACK WindowProc(HWND hwnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
                         break;
 
                     FILE* file = SFB_create_w(SaveAs, &sfb);
-                    SFB_write(&sfb, file);
+
+                    if (file == SFB_FAIL)
+                    {
+                        DEBUG_ASSERT(ERROR_OPEN_MESSAGE);
+                        break;
+                    }
+
+                    if (SFB_write(&sfb, file) == SFB_FAIL)
+                    {
+                        DEBUG_ASSERT(ERROR_WRITE_MESSAGE);
+                        break;
+                    }
 
                     if (SFB_close(file) != SFB_SUCCESSFUL)
                     {
-                        printf("Failed while closing file!\n");
-                        __debugbreak();
+                        DEBUG_ASSERT(ERROR_CLOSE_MESSAGE);
                     }
                 }
                 break;
@@ -317,6 +373,12 @@ LRESULT CALLBACK WindowProc(HWND hwnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
         Release_avaible_handle(&sfb_handle);
         
         sfb_handle = SFB_open_w(str);
+        if (sfb_handle == SFB_FAIL)
+        {
+            DEBUG_ASSERT(ERROR_OPEN_MESSAGE);
+            break;
+        }
+
         SFB_read(&sfb, sfb_handle);
 
         if (strcmp(sfb.magic, "\x2E\x53\x46\x42") != 0)
@@ -326,7 +388,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
         }
 
         {
-            wchar_t ws[MAX_PATH + 13] = L"SFB Editor - ";
+            wchar_t ws[MAX_PATH + 13];
             _snwprintf(ws, MAX_PATH + 13, L"SFB Editor - %ls", str);
             SetWindowTitle(hwnd, ws);
         }
@@ -354,7 +416,6 @@ LRESULT CALLBACK WindowProc(HWND hwnd,UINT uMsg,WPARAM wParam,LPARAM lParam)
 
         SetWindowTextA(EditControls[7], sfb.disc_content);
         SetWindowTextA(EditControls[8], sfb.disc_title);
-
 
         break;
     }
@@ -416,12 +477,40 @@ void CreateLabel(HWND hwnd, LPCWSTR s, int x, int y, int width, int height)
 void CopyBoxInfosToStruct()
 {
     char Text[20];
-    int len = GetWindowTextLengthA(EditControls[0]);
+    int TextLenghts[9];
 
-    GetWindowTextA(EditControls[0], Text, 15);
+    const int expectedLenghts[9] =
+    {
+        10, /* version calculated with 0x*/
+        11, /* hybrid flag */
+        10, /* disc content data offset calculated with 0x */
+        10, /* disc content data lenght calculated with 0x */
+        8, /* title id */
+        10, /* disc title data offset calculated with 0x */
+        10, /* disc title data lenght calculated with 0x */
+        32, /* disc content */
+        16 /* disc title */
+    };
+
+    int i;
+    for (i = 0; i < 9; i++)
+    {
+        TextLenghts[i] = GetWindowTextLengthA(EditControls[i]);
+        
+        /* temporary */
+        if (TextLenghts[i] > expectedLenghts[i])
+        {
+            MessageBoxW(window, L"Some boxes keeping more string than it should be", L"Warning", MB_ICONWARNING | MB_OK);
+            return;
+        }
+
+    }   
+    
+
+
+    GetWindowTextA(EditControls[0], Text, 20);
     uint32_t test = (uint32_t)strtol(Text, NULL, 0);
     sfb.version = REV(test);
-
 
     GetWindowTextA(EditControls[1], Text, 20);
     strcpy(sfb.hybrid_flag, Text);
@@ -456,7 +545,7 @@ void SetWindowTitle(HWND handle, const wchar_t* titlestr)
 {
     if (SetWindowTextW(handle, titlestr) == FALSE)
     {
-        __debugbreak();
+        DEBUG_ASSERT(L"Error occurred while setting window title!");
     }
 }
 
@@ -464,7 +553,10 @@ void Release_avaible_handle(FILE** sfb_handle)
 {
     if (*sfb_handle != NULL)
     {
-        SFB_close(*sfb_handle);
+        if (SFB_close(*sfb_handle) == SFB_FAIL)
+        {
+            DEBUG_ASSERT(ERROR_CLOSE_MESSAGE);
+        }
         *sfb_handle = NULL;
     }
 }

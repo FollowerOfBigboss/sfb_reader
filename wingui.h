@@ -3,19 +3,20 @@
 
 #include "sfb.h"
 
-/* #define DEBUG */ 
+#define DEBUG  1
 
-#ifdef DEBUG
-#define DEBUG_ASSERT(message) {\
-wchar_t wmsg[sizeof(message)]; \
-_snwprintf(wmsg, sizeof(wmsg), L"FILE: %ls\nLINE: %d\nFUNC: %ls\nMESSAGE: %ls",__FILEW__, __LINE__, __FUNCTIONW__, message); \
+#if DEBUG
+#define DEBUG_ASSERT(message) { \
+wchar_t wmsg[sizeof(message) + sizeof(__FILEW__) + sizeof(__LINE__) + sizeof(__FUNCTIONW__) + 41]; \
+_snwprintf(wmsg, sizeof(message) + sizeof(__FILEW__) + sizeof(__LINE__) + sizeof(__FUNCTIONW__) + 41, L"FILE: %ls\nLINE: %d\nFUNC: %ls\nMESSAGE: %ls",__FILEW__, __LINE__, __FUNCTIONW__, message); \
 MessageBoxW(NULL, wmsg, L"Error", MB_ICONERROR | MB_OK); \
 __debugbreak(); \
 }
 #else
-#define DEBUG_ASSERT(message) {\
-wchar_t wmsg[sizeof(message)]; \
-_snwprintf(wmsg, sizeof(wmsg), L"FILE: %ls\nLINE: %d\nFUNC: %ls\nMESSAGE: %ls",__FILEW__, __LINE__, __FUNCTIONW__, message); \
+#define DEBUG_ASSERT(message) { \
+wchar_t wmsg[ sizeof(message) + sizeof(__FILEW__) + sizeof(__LINE__) + sizeof(__FUNCTIONW__) + 41 ]; \
+/*printf("%i\n", sizeof(message) + sizeof(__FILEW__) + sizeof(__LINE__) + sizeof(__FUNCTIONW__) + 41);*/\
+_snwprintf(wmsg, sizeof(message) + sizeof(__FILEW__) + sizeof(__LINE__) + sizeof(__FUNCTIONW__) + 41, L"FILE: %ls\nLINE: %d\nFUNC: %ls\nMESSAGE: %ls",__FILEW__, __LINE__, __FUNCTIONW__, message); \
 MessageBoxW(NULL, wmsg, L"Error", MB_ICONERROR | MB_OK); \
 }
 #endif
@@ -492,6 +493,11 @@ void CopyBoxInfosToStruct()
         16 /* disc title */
     };
 
+    /* 
+    More work needs
+    - Check lengths of strings that boxes keeps
+    - Check beginnings of strings
+    */
     int i;
     for (i = 0; i < 9; i++)
     {

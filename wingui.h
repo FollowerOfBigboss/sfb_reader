@@ -481,18 +481,7 @@ void CopyBoxInfosToStruct()
     char Text[20];
     int TextLenghts[9];
 
-    const int expectedLenghts[9] =
-    {
-        10,
-        11,
-        10,
-        10,
-        8, 
-        10,
-        10,
-        32,
-        16 
-    };
+    const int expectedLenghts[9] ={ 10, 11, 10, 10, 8,  10, 10, 32, 16 };
 
     int i;
     for (i = 0; i < 9; i++)
@@ -503,20 +492,19 @@ void CopyBoxInfosToStruct()
         {
             if (startswith(Text, "0x") == false)
             {
-                wchar_t estr[500];
-                _snwprintf(estr, 500, L"%ls should be startswith 0x!", static_texts[i]);
-                MessageBoxW(window, estr, L"Warning", MB_ICONWARNING | MB_OK);
-                return;
+				wchar_t estr[500];
+				_snwprintf(estr, 500, L"%ls should be startswith 0x!", static_texts[i]);
+				MessageBoxW(window, estr, L"Warning", MB_ICONWARNING | MB_OK);
+				return;
             }
         }
         
         if (TextLenghts[i] > expectedLenghts[i])
         {
-			
-		    wchar_t tstr[500];
-		    _snwprintf(tstr, 500, L"%ls can not hold more than %i characters!", static_texts[i], expectedLenghts[i]);
-		    MessageBoxW(window, tstr, L"Warning", MB_ICONWARNING | MB_OK);
-            return;
+			wchar_t tstr[500];
+			_snwprintf(tstr, 500, L"%ls can not hold more than %i characters!", static_texts[i], expectedLenghts[i]);
+			MessageBoxW(window, tstr, L"Warning", MB_ICONWARNING | MB_OK);
+			return;
         }
 
     }             

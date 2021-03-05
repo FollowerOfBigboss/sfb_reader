@@ -2,6 +2,7 @@
 #include <string.h>
 
 #include "sfb.h"
+#include "helper.h"
 
 #define DEBUG  1
 
@@ -37,15 +38,15 @@ static SFB sfb;
 
 static HWND EditControls[9];
 const LPCWSTR static_texts[9] = { 
-    L"version", 
-    L"hybrid_flag", 
-    L"disc_content_data_offset", 
-    L"disc_content_data_lenght", 
-    L"disc_title_name", 
-    L"disc_title_data_offset", 
-    L"disc_title_data_lenght", 
-    L"disc_content", 
-    L"disc_title" 
+    L"Version", 
+    L"Hybrid Flag", 
+    L"Disc Content Data Offset", 
+    L"Disc Content Data Lenght", 
+    L"Disc Title Name", 
+    L"Disc Title Data Offset", 
+    L"Disc Title Data Lenght", 
+    L"Disc Content", 
+    L"Disc Title" 
 };
 
 
@@ -482,38 +483,44 @@ void CopyBoxInfosToStruct()
 
     const int expectedLenghts[9] =
     {
-        10, /* version calculated with 0x*/
-        11, /* hybrid flag */
-        10, /* disc content data offset calculated with 0x */
-        10, /* disc content data lenght calculated with 0x */
-        8, /* title id */
-        10, /* disc title data offset calculated with 0x */
-        10, /* disc title data lenght calculated with 0x */
-        32, /* disc content */
-        16 /* disc title */
+        10,
+        11,
+        10,
+        10,
+        8, 
+        10,
+        10,
+        32,
+        16 
     };
 
-    /* 
-    More work needs
-    - Check lengths of strings that boxes keeps
-    - Check beginnings of strings
-    */
     int i;
     for (i = 0; i < 9; i++)
     {
         TextLenghts[i] = GetWindowTextLengthA(EditControls[i]);
+        GetWindowTextA(EditControls[i], Text, 20);
+        if (i == 0 || i == 2 || i == 3 || i == 5 || i == 6)
+        {
+            if (startswith(Text, "0x") == false)
+            {
+                wchar_t estr[500];
+                _snwprintf(estr, 500, L"%ls should be startswith 0x!", static_texts[i]);
+                MessageBoxW(window, estr, L"Warning", MB_ICONWARNING | MB_OK);
+                return;
+            }
+        }
         
-        /* temporary */
         if (TextLenghts[i] > expectedLenghts[i])
         {
-            MessageBoxW(window, L"Some boxes keeping more string than it should be", L"Warning", MB_ICONWARNING | MB_OK);
+			
+		    wchar_t tstr[500];
+		    _snwprintf(tstr, 500, L"%ls can not hold more than %i characters!", static_texts[i], expectedLenghts[i]);
+		    MessageBoxW(window, tstr, L"Warning", MB_ICONWARNING | MB_OK);
             return;
         }
 
-    }   
-    
-
-
+    }             
+	
     GetWindowTextA(EditControls[0], Text, 20);
     uint32_t test = (uint32_t)strtol(Text, NULL, 0);
     sfb.version = REV(test);

@@ -29,28 +29,71 @@ int main(int argc, char* argv[])
 #endif
 
 	SFB sfb;
-	FILE* sfb_handle = SFB_open_a(argv[1]);
+	printf("%i\n", argc);
 
-	if (sfb_handle == SFB_FAIL)
+	if (strncmp(argv[1], "read", 4) == 0)
 	{
-		printf("Failed while opening file!\n");
-		return 1;
-	}
+		FILE* sfb_handle = SFB_open_a(argv[2]);
 
-	
-	if (SFB_read(&sfb, sfb_handle) == SFB_FAIL)
+		if (sfb_handle == SFB_FAIL)
+		{
+			printf("Failed while opening file!\n");
+			return 1;
+		}
+
+
+		if (SFB_read(&sfb, sfb_handle) == SFB_FAIL)
+		{
+			printf("Failed while reading file!\n");
+			return 1;
+		}
+
+		SFB_print(&sfb);
+
+		if (SFB_close(sfb_handle) == SFB_FAIL)
+		{
+			printf("Failed while closing file!\n");
+			return 1;
+		}
+	}
+	else if (strncmp(argv[1], "create", 6) == 0)
 	{
-		printf("Failed while reading file!\n");
-		return 1;
-	}
+		FILE* f;
+		SFB_set_defaults(&sfb);
+		if (argc > 3)
+		{
+			f = SFB_create_a(argv[2], &sfb);
+			if (f == SFB_FAIL)
+			{
+				printf("Failed while creating file!\n");
+				return 1;
+			}
+		}
+		else
+		{
+			f = SFB_create_a("PS3_DISC.SFB", &sfb);
+			if (f == SFB_FAIL)
+			{
+				printf("Failed while creating file!\n");
+				return 1;
+			}
+		}
+		if (SFB_write(&sfb, f) == SFB_FAIL)
+		{
+			printf("Failed while writing to file!\n");
+			return 1;
+		}
 
-	SFB_print(&sfb);
-	
-	if (SFB_close(sfb_handle) == SFB_FAIL)
+		if (SFB_close(f) == SFB_FAIL)
+		{
+			printf("Failed while closing file!\n");
+			return 1;
+		}
+
+	}
+	else
 	{
-		printf("Failed while closing file!\n");
-		return 1;
+		printf("%s is unknown option.\n", argv[1]);
 	}
-
 	return 0;
 }

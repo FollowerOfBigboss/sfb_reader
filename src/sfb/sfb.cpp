@@ -1,20 +1,5 @@
 #include "sfb.h"
 
-bool SFB::open(const std::string& sfb_file)
-{
-	if (stream != nullptr)
-	{
-		close();
-	}
-
-	stream = fopen(sfb_file.c_str(), "r+");
-	if (stream != nullptr)
-	{
-		return true;
-	}
-	return false;
-}
-
 bool SFB::read()
 {
 	fread(magic, sizeof(char), 4, stream);
@@ -81,20 +66,39 @@ bool SFB::close()
 	return false;
 }
 
-void SFB::create(const std::string& filename)
+#ifdef UNICODE
+void SFB::create(const wchar_t* filename)
 {
 	if (stream != nullptr)
 	{
 		close();
 	}
-	stream = fopen(filename.c_str(), "w");
+	stream = _wfopen(filename, L"w");
 }
-
-void* SFB::create_as(const std::string& filename)
+void* SFB::create_as(const wchar_t* filename)
 {
-	FILE* create = fopen(filename.c_str(), "w");
+	FILE* create = _wfopen(filename, L"w");
 	return create;
 }
+
+#else
+void SFB::create(const char* filename)
+{
+	if (stream != nullptr)
+	{
+		close();
+	}
+	stream = fopen(filename, "w");
+}
+void* SFB::create_as(const char* filename)
+{
+	FILE* create = fopen(filename, "w");
+	return create;
+}
+
+	
+#endif
+
 
 void SFB::write_as(const void* fhandle)
 {

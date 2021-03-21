@@ -31,7 +31,7 @@ const char* StaticTextLabels[] = {
 
 bool MyApp::OnInit()
 {
-	MyFrame* MainWin = new MyFrame("sfb reader", wxPoint(0,0), wxSize(400, 400));
+	MyFrame* MainWin = new MyFrame(wxT("sfb reader"), wxPoint(0,0), wxSize(400, 400));
 	MainWin->Show(true);
 	return true;
 }
@@ -52,10 +52,15 @@ void MyFrame::MenuOpenEvent(wxCommandEvent& event)
         FileOpened = false;
     }
 
-    wxFileDialog* dialog = new wxFileDialog(this, "Sfb files", "", "", "SFB Files (*.sfb)|*.sfb|All Files (*.*)|*.*", wxFD_OPEN | wxFD_FILE_MUST_EXIST);
+    wxFileDialog* dialog = new wxFileDialog(this, wxT("Sfb files"), wxT(""), wxT(""), wxT("SFB Files (*.sfb)|*.sfb|All Files (*.*)|*.*"), wxFD_OPEN | wxFD_FILE_MUST_EXIST);
     if (dialog->ShowModal() == wxID_OK)
     {
-        sfb.open(dialog->GetPath().ToStdString());
+    #ifdef _WIN32
+            sfb.open(dialog->GetPath().wc_str());
+    #else
+        sfb.open(dialog->GetPath().mb_str());
+    #endif
+        
         sfb.read();
         SetTextCtrls();
         this->SetLabel(wxString::Format(wxT("SFB Editor - %s"), dialog->GetPath()));
@@ -79,10 +84,14 @@ void MyFrame::MenuSaveEvent(wxCommandEvent& event)
 {
     if (FileCreateMode == true)
     {
-        wxFileDialog* dialog = new wxFileDialog(this, "Sfb files", "", "", "SFB Files (*.sfb)|*.sfb|All Files (*.*)|*.*", wxFD_SAVE);
+        wxFileDialog* dialog = new wxFileDialog(this, wxT("Sfb files"), wxT(""), wxT(""), wxT("SFB Files (*.sfb)|*.sfb|All Files (*.*)|*.*"), wxFD_SAVE);
         if (dialog->ShowModal() == wxID_OK)
         {
-            sfb.create(dialog->GetPath().ToStdString());
+        #ifdef _WIN32
+            sfb.create(dialog->GetPath().wc_str());
+        #else
+            sfb.create(dialog->GetPath().mb_str())
+        #endif
             GetFromTextCtrls();
             sfb.write();
             FileCreateMode = false;
@@ -104,10 +113,14 @@ void MyFrame::MenuSaveAsEvent(wxCommandEvent& event)
 {
     if (FileOpened == 1 || FileCreateMode == 1)
     {
-        wxFileDialog* dialog = new wxFileDialog(this, "Sfb files", "", "", "SFB Files (*.sfb)|*.sfb|All Files (*.*)|*.*", wxFD_SAVE);
+        wxFileDialog* dialog = new wxFileDialog(this, wxT("Sfb files"), wxT(""), wxT(""), wxT("SFB Files (*.sfb)|*.sfb|All Files (*.*)|*.*"), wxFD_SAVE);
         if (dialog->ShowModal() == wxID_OK)
         {
-            void* ptr = sfb.create_as(dialog->GetPath().ToStdString());
+        #ifdef _WIN32
+            void* ptr = sfb.create_as(dialog->GetPath().wc_str());
+        #else
+            void* ptr = sfb.create_as(dialog->GetPath().mb_str());
+        #endif
             sfb.write_as(ptr);
             sfb.close_as(ptr);
         }
@@ -131,7 +144,7 @@ void MyFrame::MenuCloseEvent(wxCommandEvent& event)
 
     for (int i = 0; i < 9; i++)
     {
-        TextCtrl[i]->SetLabel("");
+        TextCtrl[i]->SetLabel(wxT(""));
     }
 }
 
@@ -144,15 +157,20 @@ void MyFrame::ButtonSaveEvent(wxCommandEvent& event)
 {
     if (FileCreateMode == true)
     {
-        wxFileDialog* dialog = new wxFileDialog(this, "Sfb files", "", "", "SFB Files (*.sfb)|*.sfb|All Files (*.*)|*.*", wxFD_SAVE);
+        wxFileDialog* dialog = new wxFileDialog(this, wxT("Sfb files"), wxT(""), wxT(""), wxT("SFB Files (*.sfb)|*.sfb|All Files (*.*)|*.*"), wxFD_SAVE);
         if (dialog->ShowModal() == wxID_OK)
         {
-            sfb.create(dialog->GetPath().ToStdString());
-            GetFromTextCtrls();
-            sfb.write();
-            FileCreateMode = false;
-            FileOpened = true;
-            this->SetLabel(wxString::Format(wxT("SFB Editor - %s"), dialog->GetPath()));
+        #ifdef _WIN32
+            sfb.create(dialog->GetPath().wc_str());
+        #else
+            sfb.create(dialog->GetPath().mb_str());
+        #endif
+        
+        GetFromTextCtrls();
+        sfb.write();
+        FileCreateMode = false;
+        FileOpened = true;
+        this->SetLabel(wxString::Format(wxT("SFB Editor - %s"), dialog->GetPath()));
         }
     }
     else
@@ -175,7 +193,12 @@ void MyFrame::OnDropFiles(wxDropFilesEvent& event)
         sfb.close();
     }
 
-    sfb.open(event.GetFiles()[0].ToStdString());
+    #ifdef _WIN32
+        sfb.open(event.GetFiles()[0].wc_str());
+    #else
+        sfb.open(event.GetFiles()[0].mb_str());
+    #endif
+
     sfb.read();
     SetTextCtrls();
     this->SetLabel( wxString::Format(wxT("SFB Editor - %s"), event.GetFiles()[0].ToStdString()) );
@@ -197,16 +220,16 @@ void MyFrame::CreateMyWidgets()
     this->DragAcceptFiles(true);
 
     Menu = new wxMenu;
-    Menu->Append(ID_MENU_OPEN, "Open");
-    Menu->Append(ID_MENU_CREATE, "Create");
-    Menu->Append(ID_MENU_SAVE, "Save");
-    Menu->Append(ID_MENU_SAVEAS, "Save As");
-    Menu->Append(ID_MENU_CLOSE, "Close");
+    Menu->Append(ID_MENU_OPEN, wxT("Open"));
+    Menu->Append(ID_MENU_CREATE, wxT("Create"));
+    Menu->Append(ID_MENU_SAVE, wxT("Save"));
+    Menu->Append(ID_MENU_SAVEAS, wxT("Save As"));
+    Menu->Append(ID_MENU_CLOSE, wxT("Close"));
     Menu->AppendSeparator();
-    Menu->Append(ID_MENU_EXIT, "Exit");
+    Menu->Append(ID_MENU_EXIT, wxT("Exit"));
 
     Menubar = new wxMenuBar();
-    Menubar->Append(Menu, "File");
+    Menubar->Append(Menu, wxT("File"));
     SetMenuBar(Menubar);
 
     mainPanel = new wxPanel(this, wxID_ANY);

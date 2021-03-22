@@ -9,7 +9,7 @@
 class SFB
 {
 public:
-#ifdef UNICODE
+#ifdef _WIN32
 	bool open(const wchar_t* sfb_file)
 	{
 		if (stream != nullptr)

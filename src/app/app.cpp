@@ -11,11 +11,16 @@ ENTRY
 
 if (argc < 2)
 	{
+	#ifdef _WIN32
 		wxEntryStart(NULL, NULL);
-		wxTheApp->CallOnInit();
-		wxTheApp->OnRun();
-		wxEntryCleanup();
-		return 0;
+	#else
+		wxEntryStart(argc, argv);
+	#endif // _WIN32
+		
+	wxTheApp->CallOnInit();
+	wxTheApp->OnRun();
+	wxEntryCleanup();
+	return 0;
 	}
 #else
 	if (argc < 2)

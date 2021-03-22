@@ -12,7 +12,7 @@
 		#define GetCmdArg(X, num) X[num]
 	#endif
 #else
-	#ifdef UNICODE
+	#ifdef _WIN32
 		#define ENTRY int wmain(int argc, wchar_t *argv[])
 	#else 
 		#define ENTRY int main(int argc, char* argv[])
@@ -20,7 +20,7 @@
 #define GetCmdArg(X, num) X[num]
 #endif
 
-#ifdef UNICODE 
+#ifdef _WIN32
 	#define strCmp wcsncmp
 	#define CPT(X) L##X
 #else

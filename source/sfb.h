@@ -9,9 +9,9 @@ class SFB
 {
 public:
 
-	bool open(const char* sfb_file);
-	void create(const char* filename);
-	void* create_as(const char* filename);
+	bool open(const std::string& sfb_file);
+	void create(const std::string& filename);
+	void* create_as(const std::string& filename);
 
 	bool read();
 	bool write();

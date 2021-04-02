@@ -19,6 +19,8 @@
 #include <QMessageBox>
 #include <QFileDialog>
 
+#include "sfb.h"
+
 class SFBGui : public QMainWindow {
 
     Q_OBJECT
@@ -35,6 +37,8 @@ private:
     QLineEdit* LineEdit[9];
 
     QAction *Actions[6];
+    
+    SFB sfb;
 
 private slots:
   void OnActionOpen();

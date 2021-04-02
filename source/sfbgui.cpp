@@ -65,7 +65,19 @@ SFBGui::SFBGui()
 void SFBGui::OnActionOpen()
 {
     QString filename = QFileDialog::getOpenFileName(this, "Open a sfb file", "", tr("sfb files(*.sfb *.SFB);; All Files(*.*)"));
-    qDebug(filename.toUtf8());
+    sfb.open(filename.toStdString());
+    sfb.read();
+
+    LineEdit[0]->setText(QString::asprintf("0x%.8X", REV(sfb.version)));
+    LineEdit[1]->setText(sfb.hybrid_flag);
+    LineEdit[2]->setText(QString::asprintf("0x%.8X", REV(sfb.disc_content_data_offset)));
+    LineEdit[3]->setText(QString::asprintf("0x%.8X", REV(sfb.disc_content_data_lenght)));
+    LineEdit[4]->setText(sfb.disc_title_name);
+    LineEdit[5]->setText(QString::asprintf("0x%.8X", REV(sfb.disc_title_data_offset)));
+    LineEdit[6]->setText(QString::asprintf("0x%.8X", REV(sfb.disc_title_data_lenght)));
+    LineEdit[7]->setText(sfb.disc_content);
+    LineEdit[8]->setText(sfb.disc_title);
+
 }
 void SFBGui::OnActionCreate()
 {

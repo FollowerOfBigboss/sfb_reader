@@ -1,13 +1,13 @@
 #include "sfb.h"
 #include <cstring>
 
-bool SFB::open(const char* sfb_file)
+bool SFB::open(const std::string& sfb_file)
 {
 	if (stream != nullptr)
 	{
 		close();
 	}
-	stream = fopen(sfb_file, "r+");
+	stream = fopen(sfb_file.c_str(), "r+");
 
 	if (stream != nullptr)
 	{
@@ -82,17 +82,17 @@ bool SFB::close()
 	return false;
 }
 
-void SFB::create(const char* filename)
+void SFB::create(const std::string& filename)
 {
 	if (stream != nullptr)
 	{
 		close();
 	}
-	stream = fopen(filename, "w");
+	stream = fopen(filename.c_str(), "w");
 }
-void* SFB::create_as(const char* filename)
+void* SFB::create_as(const std::string& filename)
 {
-	FILE* create = fopen(filename, "w");
+	FILE* create = fopen(filename.c_str(), "w");
 	return create;
 }
 

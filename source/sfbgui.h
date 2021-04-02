@@ -40,6 +40,9 @@ private:
     
     SFB sfb;
 
+    void SetLineEdits();
+    void GetFromLineEdits();
+
 private slots:
   void OnActionOpen();
   void OnActionCreate();

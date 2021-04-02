@@ -37,10 +37,10 @@ SFBGui::SFBGui()
 
     for (int i = 0; i < 9; i++)
     {
-        hbox[i] = new QHBoxLayout();
+        hbox[i] = new QHBoxLayout;
 
         PropLabel[i] = new QLabel(PropList[i], this);
-        PropLabel[i]->setMinimumSize(QSize(130,0));
+        PropLabel[i]->setMinimumSize(QSize(150,0));
         LineEdit[i] = new QLineEdit(this);
 
         hbox[i]->addWidget(PropLabel[i]);
@@ -67,17 +67,7 @@ void SFBGui::OnActionOpen()
     QString filename = QFileDialog::getOpenFileName(this, "Open a sfb file", "", tr("sfb files(*.sfb *.SFB);; All Files(*.*)"));
     sfb.open(filename.toStdString());
     sfb.read();
-
-    LineEdit[0]->setText(QString::asprintf("0x%.8X", REV(sfb.version)));
-    LineEdit[1]->setText(sfb.hybrid_flag);
-    LineEdit[2]->setText(QString::asprintf("0x%.8X", REV(sfb.disc_content_data_offset)));
-    LineEdit[3]->setText(QString::asprintf("0x%.8X", REV(sfb.disc_content_data_lenght)));
-    LineEdit[4]->setText(sfb.disc_title_name);
-    LineEdit[5]->setText(QString::asprintf("0x%.8X", REV(sfb.disc_title_data_offset)));
-    LineEdit[6]->setText(QString::asprintf("0x%.8X", REV(sfb.disc_title_data_lenght)));
-    LineEdit[7]->setText(sfb.disc_content);
-    LineEdit[8]->setText(sfb.disc_title);
-
+    SetLineEdits();
 }
 void SFBGui::OnActionCreate()
 {
@@ -87,22 +77,67 @@ void SFBGui::OnActionCreate()
 void SFBGui::OnActionSave()
 {
     QString filename = QFileDialog::getSaveFileName(this, "Save file", "", "sfb files (*.SFB);; All Files(*.*)");
-    qDebug(filename.toUtf8());
+    GetFromLineEdits();
 }
 
 void SFBGui::OnActionSaveAs()
 {
     QString filename = QFileDialog::getSaveFileName(this, "Save file", "", "sfb files (*.SFB);; All Files(*.*)");
-    qDebug(filename.toUtf8());
+    void* saveas = sfb.create_as(filename.toStdString());
+    sfb.write_as(saveas);
+    sfb.close_as(saveas);
 }
 
 
 void SFBGui::OnActionClose()
 {
+    sfb.close();
+    for (int i = 0; i < 9; i++)
+    {
+        LineEdit[i]->setText("");
+    }
     return;
 }
 
 void SFBGui::OnActionExit()
 {
+    sfb.close();
     QApplication::exit();
+}
+
+void SFBGui::SetLineEdits()
+{
+    LineEdit[0]->setText(QString::asprintf("0x%.8X", REV(sfb.version)));
+    LineEdit[1]->setText(sfb.hybrid_flag);
+    LineEdit[2]->setText(QString::asprintf("0x%.8X", REV(sfb.disc_content_data_offset)));
+    LineEdit[3]->setText(QString::asprintf("0x%.8X", REV(sfb.disc_content_data_lenght)));
+    LineEdit[4]->setText(sfb.disc_title_name);
+    LineEdit[5]->setText(QString::asprintf("0x%.8X", REV(sfb.disc_title_data_offset)));
+    LineEdit[6]->setText(QString::asprintf("0x%.8X", REV(sfb.disc_title_data_lenght)));
+    LineEdit[7]->setText(sfb.disc_content);
+    LineEdit[8]->setText(sfb.disc_title);
+}
+
+void SFBGui::GetFromLineEdits()
+{
+    sfb.version = REV(((uint32_t)LineEdit[0]->text().toInt(nullptr, 16)));
+    strcpy(sfb.hybrid_flag, LineEdit[1]->text().toStdString().c_str());
+    sfb.disc_content_data_offset = REV(((uint32_t)LineEdit[2]->text().toInt(nullptr, 16)));
+    sfb.disc_content_data_lenght = REV(((uint32_t)LineEdit[3]->text().toInt(nullptr, 16)));
+    strcpy(sfb.disc_title_name, LineEdit[4]->text().toStdString().c_str());
+    sfb.disc_title_data_offset = REV(((uint32_t)LineEdit[5]->text().toInt(nullptr, 16)));
+    sfb.disc_title_data_lenght = REV(((uint32_t)LineEdit[6]->text().toInt(nullptr, 16)));
+    strcpy(sfb.disc_content, LineEdit[7]->text().toStdString().c_str());
+    strcpy(sfb.disc_title, LineEdit[8]->text().toStdString().c_str());
+
+    // printf("Version: 0x%.8X\n", REV(sfb.version));
+    // printf("HYBRID FLAG: %s\n", sfb.hybrid_flag);
+    // printf("Disc Content Data Offset: 0x%.8X\n", REV(sfb.disc_content_data_offset));
+    // printf("Disc Content Data Lenght: 0x%.8X\n", REV(sfb.disc_content_data_lenght));
+    // printf("Disc Title Name: %s\n", sfb.disc_title_name);
+    // printf("Disc Title Data Offset: 0x%.8X\n", REV(sfb.disc_title_data_offset));
+    // printf("Disc Title Data Lenght: 0x%.8X\n", REV(sfb.disc_title_data_lenght));
+    // printf("Disc Content: %s\n", sfb.disc_content);
+    // printf("Disc Title: %s\n", sfb.disc_title);
+
 }

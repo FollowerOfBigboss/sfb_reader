@@ -1,5 +1,5 @@
 #include "sfb.h"
-
+#include <cstring>
 
 bool SFB::open(const char* sfb_file)
 {

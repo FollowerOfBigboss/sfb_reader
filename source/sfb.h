@@ -1,5 +1,4 @@
 #include <iostream>
-#include <fstream>
 
 #ifndef SFB_H
 #define SFB_H

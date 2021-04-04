@@ -81,6 +81,7 @@ void SFBGui::OnActionOpen()
         sfb.read();
         SetLineEdits();
         FileOpened = true;
+        this->setWindowTitle(QString("SFB Editor - %1").arg(filename));
     }
     return;
 }
@@ -239,4 +240,5 @@ void SFBGui::dropEvent(QDropEvent* event)
     sfb.read();
     SetLineEdits();
     FileOpened = true;
+    this->setWindowTitle(QString("SFB Editor - %1").arg(filename));
 }

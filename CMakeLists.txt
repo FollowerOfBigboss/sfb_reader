@@ -21,7 +21,7 @@ if (USEGUI)
 	else()
 		message("Couldn't find Qt5 please provide CMAKE_PREFIX_PATH in order to find Qt5")
 		message("Example:")
-		message("cmake .. -DCMAKE_PREFIX_PATH=D:/Qt/5.9.9/msvc2017_64\n")
+		message("cmake .. -DUSEGUI=True -DCMAKE_PREFIX_PATH=D:/Qt/5.9.9/msvc2017_64\n")
 		message(FATAL_ERROR "Aborting cmake because i couldn't find qt please follow steps at above. It may be helpful.")
 	endif()
 

@@ -58,50 +58,118 @@ SFBGui::SFBGui()
     vbox->addLayout(savelayout);
 
     widget->setLayout(vbox);
-
-    this->setWindowTitle("Test");
+    this->setWindowTitle("SFB Editor");
+    setAcceptDrops(true);
 }
 
 void SFBGui::OnActionOpen()
 {
+    if (FileOpened == true)
+    {
+        sfb.close();
+    }
+
+    if (create_ptr != nullptr)
+    {
+        sfb.close_as(create_ptr);
+    }
+
     QString filename = QFileDialog::getOpenFileName(this, "Open a sfb file", "", tr("sfb files(*.sfb *.SFB);; All Files(*.*)"));
-    sfb.open(filename.toStdString());
-    sfb.read();
-    SetLineEdits();
+    if (filename.size() > 0)
+    {
+        sfb.open(filename.toStdString());
+        sfb.read();
+        SetLineEdits();
+        FileOpened = true;
+    }
+    return;
 }
 void SFBGui::OnActionCreate()
 {
+    if (FileOpened == true)
+    {
+        sfb.close();
+        FileOpened = false;
+    }
+
+    sfb.set_defaults();
+    SetLineEdits();
+    this->setWindowTitle("SFB Editor - New Project");
+
+    FileCreateMode = true;
     return;
 }
-
 void SFBGui::OnActionSave()
 {
-    QString filename = QFileDialog::getSaveFileName(this, "Save file", "", "sfb files (*.SFB);; All Files(*.*)");
-    GetFromLineEdits();
-}
+    if (FileCreateMode == true)
+    {
+        QString filename = QFileDialog::getSaveFileName(this, "Save file", "", "sfb files (*.SFB);; All Files(*.*)");   
+        if (filename.size() > 0)
+        {
+            GetFromLineEdits();
+            create_ptr = sfb.create_as(filename.toStdString());
+            sfb.write_as(create_ptr);
 
+            FileCreateMode = false;            
+            this->setWindowTitle(QString("SFB Editor - %1").arg(filename));
+        }
+        return;
+    }
+
+    if (FileOpened == true)
+    {
+        GetFromLineEdits();
+        sfb.write();
+        return;
+    }
+}
 void SFBGui::OnActionSaveAs()
 {
-    QString filename = QFileDialog::getSaveFileName(this, "Save file", "", "sfb files (*.SFB);; All Files(*.*)");
-    void* saveas = sfb.create_as(filename.toStdString());
-    sfb.write_as(saveas);
-    sfb.close_as(saveas);
+    if (FileCreateMode == true || FileOpened == true)
+    {
+        QString filename = QFileDialog::getSaveFileName(this, "Save file", "", "sfb files (*.SFB);; All Files(*.*)");
+        if (filename.size() > 0)
+        {
+            void* saveas = sfb.create_as(filename.toStdString());
+            sfb.write_as(saveas);
+            sfb.close_as(saveas);
+        }
+    }
 }
-
-
 void SFBGui::OnActionClose()
 {
-    sfb.close();
+    if (create_ptr != nullptr)
+    {
+        sfb.close_as(create_ptr);
+        create_ptr = nullptr;
+    }
+    FileCreateMode = false;
+    
+    if (FileOpened == true)
+    {
+        sfb.close();
+    }
+
     for (int i = 0; i < 9; i++)
     {
         LineEdit[i]->setText("");
     }
+    
+    this->setWindowTitle("SFB Editor");
     return;
 }
-
 void SFBGui::OnActionExit()
 {
-    sfb.close();
+    if (FileOpened == true)
+    {
+        sfb.close();
+    }
+
+    if (create_ptr != nullptr)
+    {
+        sfb.close_as(create_ptr);
+    }
+
     QApplication::exit();
 }
 
@@ -117,7 +185,6 @@ void SFBGui::SetLineEdits()
     LineEdit[7]->setText(sfb.disc_content);
     LineEdit[8]->setText(sfb.disc_title);
 }
-
 void SFBGui::GetFromLineEdits()
 {
     sfb.version = REV(((uint32_t)LineEdit[0]->text().toInt(nullptr, 16)));
@@ -140,4 +207,36 @@ void SFBGui::GetFromLineEdits()
     // printf("Disc Content: %s\n", sfb.disc_content);
     // printf("Disc Title: %s\n", sfb.disc_title);
 
+}
+
+void SFBGui::dragEnterEvent(QDragEnterEvent* event)
+{
+    event->acceptProposedAction();
+}
+
+void SFBGui::dragLeaveEvent(QDragLeaveEvent* event)
+{
+    event->accept();
+}
+
+void SFBGui::dropEvent(QDropEvent* event)
+{
+    event->acceptProposedAction();
+
+    if (FileOpened == true)
+    {
+        sfb.close();
+    }
+
+    if (create_ptr != nullptr)
+    {
+        sfb.close_as(create_ptr);
+    }
+
+    QString filename = event->mimeData()->urls()[0].toLocalFile();
+
+    sfb.open(filename.toStdString());
+    sfb.read();
+    SetLineEdits();
+    FileOpened = true;
 }

@@ -19,6 +19,9 @@
 #include <QMessageBox>
 #include <QFileDialog>
 
+#include <QDropEvent>
+#include <QMimeData>
+
 #include "sfb.h"
 
 class SFBGui : public QMainWindow {
@@ -27,6 +30,11 @@ class SFBGui : public QMainWindow {
 
 public:
     SFBGui();
+protected:
+    void dragEnterEvent(QDragEnterEvent* event) override;
+//    void dragMoveEvent(QDragMoveEvent* event) override;
+    void dragLeaveEvent(QDragLeaveEvent* event) override;
+    void dropEvent(QDropEvent* event) override;
 
 private:
     QVBoxLayout* vbox;
@@ -39,7 +47,10 @@ private:
     QAction *Actions[6];
     
     SFB sfb;
+    bool FileCreateMode = false;
+    bool FileOpened = false;
 
+    void* create_ptr = nullptr;
     void SetLineEdits();
     void GetFromLineEdits();
 

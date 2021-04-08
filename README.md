@@ -48,7 +48,7 @@ The usage is same in Linux and Windows but if you want to use gui version you sh
 ./sfb.o [options] <file>
 ```
 ### Options for command line
-* read
+* read  
 Reads file at given file parameter
 * create  
 Creates a file according to file parameter, if there is no file parameter it creates automatically file by default name

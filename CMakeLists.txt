@@ -37,7 +37,7 @@ if (USEGUI)
 		source/sfbgui.cpp
 		source/sfbgui.h
 	)
-	target_link_libraries(sfbeditor Qt5::Widgets Qt5::Core Qt5::Gui)
+	target_link_libraries(sfbeditor Qt5::Widgets Qt5::Core)
 
 else()
 	add_executable(sfbeditor

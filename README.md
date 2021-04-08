@@ -28,8 +28,13 @@ cmake .. -DUSEGUI=True
 ```
 
 For linux you need to run ```make``` . In visual studio you need to install Qt5 extension.
+After build in windows you need to run winqtdeploy because Qt5 linked dynamically so we need libraries.
 
-if cmake couldn't find your Qt5 location provide your qt5 directory like this
+```
+winqtdeploy <Your build path>
+```
+
+if cmake couldn't find your Qt5 location provide your Qt5 directory like this
 
 ```
 cmake .. -DUSEGUI=True -DCMAKE_PREFIX_PATH=D:\Qt\5.9.9\msvc2017_64 

@@ -15,6 +15,10 @@ const QStringList PropList = {
 SFBGui::SFBGui()
 {
     QMenu* menu = menuBar()->addMenu(tr("&File"));
+    QMenu* infomenu = menuBar()->addMenu(tr("&Info"));
+    
+    QAction* aboutact = infomenu->addAction("About");
+
     Actions[0] = menu->addAction("Open");
     Actions[1] = menu->addAction("Create");
     Actions[2] = menu->addAction("Save");
@@ -29,6 +33,8 @@ SFBGui::SFBGui()
     connect(Actions[3], &QAction::triggered, this, &SFBGui::OnActionSaveAs);
     connect(Actions[4], &QAction::triggered, this, &SFBGui::OnActionClose);
     connect(Actions[5], &QAction::triggered, this, &SFBGui::OnActionExit);
+    
+    connect(aboutact, &QAction::triggered, this, [&] { QMessageBox::information(this, "About", "A simple SFB reader/editor written by FollowerOfBigboss\nDistributed under Unlicence"); });
 
 
     QWidget *widget = new QWidget;

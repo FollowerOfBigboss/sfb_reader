@@ -18,7 +18,7 @@ public:
 	bool close();
 
 	void write_as(const void* fhandle);
-	void close_as(const void* fhandle);
+	bool close_as(const void* fhandle);
 
 	void set_defaults();
 

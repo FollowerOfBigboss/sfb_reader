@@ -1,6 +1,8 @@
 #include "sfb.h"
 #include <cstring>
 
+#define CHECK_READ(X, Y) if (X != Y) return false
+
 bool SFB::open(const std::string& sfb_file)
 {
 	if (stream != nullptr)
@@ -18,28 +20,28 @@ bool SFB::open(const std::string& sfb_file)
 
 bool SFB::read()
 {
-	fread(magic, sizeof(char), 4, stream);
-	fread(&version, sizeof(uint32_t), 1, stream);
+	CHECK_READ(fread(magic, sizeof(char), 4, stream), 4);
+	CHECK_READ(fread(&version, sizeof(uint32_t), 1, stream), 1);
 	
 	fseek(stream, 24, SEEK_CUR); // Pass unknown_zeroes0
 	
-	fread(hybrid_flag, sizeof(char), sizeof(hybrid_flag), stream);
-	fread(&disc_content_data_offset, sizeof(uint32_t), 1, stream);
-	fread(&disc_content_data_lenght, sizeof(uint32_t), 1, stream);
+	CHECK_READ(fread(hybrid_flag, sizeof(char), sizeof(hybrid_flag), stream), 16);
+	CHECK_READ(fread(&disc_content_data_offset, sizeof(uint32_t), 1, stream), 1);
+	CHECK_READ(fread(&disc_content_data_lenght, sizeof(uint32_t), 1, stream), 1);
 	
 	fseek(stream, 8, SEEK_CUR); // Pass another unknown_zeroes1
 	
-	fread(disc_title_name, sizeof(char), sizeof(disc_title_name), stream);
+	CHECK_READ(fread(disc_title_name, sizeof(char), sizeof(disc_title_name), stream), 8);
 	
 	fseek(stream, 8, SEEK_CUR); // Pass another unknown_zeroes2
 	
-	fread(&disc_title_data_offset, sizeof(uint32_t), 1, stream);
-	fread(&disc_title_data_lenght, sizeof(uint32_t), 1, stream);
+	CHECK_READ(fread(&disc_title_data_offset, sizeof(uint32_t), 1, stream), 1);
+	CHECK_READ(fread(&disc_title_data_lenght, sizeof(uint32_t), 1, stream), 1);
 	
 	fseek(stream, 424, SEEK_CUR); // Pass another unknown_zeroes3
 	
-	fread(disc_content, sizeof(char), sizeof(disc_content), stream);
-	fread(disc_title, sizeof(char), sizeof(disc_title), stream);
+	CHECK_READ(fread(disc_content, sizeof(char), sizeof(disc_content), stream), 32);
+	CHECK_READ(fread(disc_title, sizeof(char), sizeof(disc_title), stream), 16);
 	
 	return true;
 }
@@ -73,12 +75,16 @@ bool SFB::close()
 {
 	if (stream != nullptr)
 	{
-		if (fclose(stream) == NULL)
+
+		if (fclose(stream) != EOF)
 		{
 			stream = nullptr;
 			return true;
 		}
+
 	}
+
+	stream = nullptr;
 	return false;
 }
 
@@ -121,9 +127,21 @@ void SFB::write_as(const void* fhandle)
 
 }
 
-void SFB::close_as(const void* fhandle)
+bool SFB::close_as(const void* fhandle)
 {
-	fclose((FILE*)fhandle);
+	if (fhandle != nullptr)
+	{
+
+		if (fclose((FILE*)fhandle) != EOF)
+		{
+			fhandle = nullptr;
+			return true;
+		}
+
+	}
+
+	fhandle = nullptr;
+	return false;
 }
 
 void SFB::set_defaults()

@@ -50,6 +50,7 @@ SFBGui::SFBGui()
     }
 
     SaveButton = new QPushButton("Save", this);
+    connect(SaveButton, &QPushButton::clicked, this, &SFBGui::OnActionSave);
 
     QHBoxLayout* savelayout = new QHBoxLayout;
     savelayout->addWidget(SaveButton, 0, Qt::AlignRight);
@@ -67,18 +68,32 @@ void SFBGui::OnActionOpen()
     if (FileOpened == true)
     {
         sfb.close();
+        FileOpened = false;
     }
 
     if (create_ptr != nullptr)
     {
         sfb.close_as(create_ptr);
+        FileCreateMode = false;
     }
 
     QString filename = QFileDialog::getOpenFileName(this, "Open a sfb file", "", tr("sfb files(*.sfb *.SFB);; All Files(*.*)"));
     if (filename.size() > 0)
     {
-        sfb.open(filename.toStdString());
-        sfb.read();
+        if (sfb.open(filename.toStdString()) != true)
+        {
+            QMessageBox::critical(this, "Error", QString("%1 couldn't open successfully").arg(filename));
+            FileOpened = false;
+            return;
+        }
+        
+        if (sfb.read() != true)
+        {
+            QMessageBox::critical(this, "Error", QString("Error occurred while reading"));
+            FileOpened = false;
+            return;
+        }
+
         SetLineEdits();
         FileOpened = true;
         this->setWindowTitle(QString("SFB Editor - %1").arg(filename));
@@ -104,19 +119,22 @@ void SFBGui::OnActionSave()
 {
     if (FileCreateMode == true)
     {
-        QString filename = QFileDialog::getSaveFileName(this, "Save file", "", "sfb files (*.SFB);; All Files(*.*)");   
-        if (filename.size() > 0)
+        if (create_ptr == nullptr)
         {
-            GetFromLineEdits();
-            create_ptr = sfb.create_as(filename.toStdString());
-            sfb.write_as(create_ptr);
-
-            FileCreateMode = false;            
-            this->setWindowTitle(QString("SFB Editor - %1").arg(filename));
+            QString filename = QFileDialog::getSaveFileName(this, "Save file", "", "sfb files (*.SFB);; All Files(*.*)");
+            if (filename.size() > 0)
+            {
+                create_ptr = sfb.create_as(filename.toStdString());
+                GetFromLineEdits();
+                this->setWindowTitle(QString("SFB Editor - Create Mode -  %1").arg(filename));
+            }
         }
+
+        GetFromLineEdits();
+        sfb.write_as(create_ptr);
         return;
     }
-
+    
     if (FileOpened == true)
     {
         GetFromLineEdits();
@@ -132,6 +150,8 @@ void SFBGui::OnActionSaveAs()
         if (filename.size() > 0)
         {
             void* saveas = sfb.create_as(filename.toStdString());
+            
+            GetFromLineEdits();
             sfb.write_as(saveas);
             sfb.close_as(saveas);
         }
@@ -139,16 +159,23 @@ void SFBGui::OnActionSaveAs()
 }
 void SFBGui::OnActionClose()
 {
-    if (create_ptr != nullptr)
+    if (FileCreateMode == true)
     {
-        sfb.close_as(create_ptr);
-        create_ptr = nullptr;
-    }
-    FileCreateMode = false;
-    
+        if (create_ptr != nullptr)
+        {
+            sfb.close_as(create_ptr);
+            create_ptr = nullptr;
+        }
+        FileCreateMode = false;
+    }    
+
     if (FileOpened == true)
     {
-        sfb.close();
+        if (sfb.close() != true)
+        {
+            QMessageBox::critical(this, "Error", QString("Error occurred while closing file"));
+        }
+        FileOpened = false;
     }
 
     for (int i = 0; i < 9; i++)
@@ -188,6 +215,27 @@ void SFBGui::SetLineEdits()
 }
 void SFBGui::GetFromLineEdits()
 {
+    // Badly implemented checks
+    const int expectedLenghts[9] = { 10, 11, 10, 10, 8,  10, 10, 32, 16 };
+    for (int i = 0; i < 9; i++)
+    {
+        if (LineEdit[i]->text().length() > expectedLenghts[i])
+        {
+            QMessageBox::warning(this, "Warning", QString("%1' s lenght can not bigger than %2 ").arg(PropList[i]).arg(expectedLenghts[i]) );
+            return;
+        }
+
+
+        if (i == 0 || i == 2 || i == 3 || i == 5 || i == 6)
+        {
+            if (LineEdit[i]->text().startsWith("0x") == false)
+            {
+                QMessageBox::warning(this, "Warning", QString("%1 should be startswith 0x").arg(PropList[i]));
+                return;
+            }
+        }
+    }
+
     sfb.version = REV(((uint32_t)LineEdit[0]->text().toInt(nullptr, 16)));
     strcpy(sfb.hybrid_flag, LineEdit[1]->text().toStdString().c_str());
     sfb.disc_content_data_offset = REV(((uint32_t)LineEdit[2]->text().toInt(nullptr, 16)));
@@ -197,17 +245,6 @@ void SFBGui::GetFromLineEdits()
     sfb.disc_title_data_lenght = REV(((uint32_t)LineEdit[6]->text().toInt(nullptr, 16)));
     strcpy(sfb.disc_content, LineEdit[7]->text().toStdString().c_str());
     strcpy(sfb.disc_title, LineEdit[8]->text().toStdString().c_str());
-
-    // printf("Version: 0x%.8X\n", REV(sfb.version));
-    // printf("HYBRID FLAG: %s\n", sfb.hybrid_flag);
-    // printf("Disc Content Data Offset: 0x%.8X\n", REV(sfb.disc_content_data_offset));
-    // printf("Disc Content Data Lenght: 0x%.8X\n", REV(sfb.disc_content_data_lenght));
-    // printf("Disc Title Name: %s\n", sfb.disc_title_name);
-    // printf("Disc Title Data Offset: 0x%.8X\n", REV(sfb.disc_title_data_offset));
-    // printf("Disc Title Data Lenght: 0x%.8X\n", REV(sfb.disc_title_data_lenght));
-    // printf("Disc Content: %s\n", sfb.disc_content);
-    // printf("Disc Title: %s\n", sfb.disc_title);
-
 }
 
 void SFBGui::dragEnterEvent(QDragEnterEvent* event)
@@ -232,12 +269,24 @@ void SFBGui::dropEvent(QDropEvent* event)
     if (create_ptr != nullptr)
     {
         sfb.close_as(create_ptr);
+        FileCreateMode = false;
     }
 
     QString filename = event->mimeData()->urls()[0].toLocalFile();
+    
+    if (sfb.open(filename.toStdString()) != true)
+    {
+        QMessageBox::critical(this, "Error", QString("%1 couldn't open successfully").arg(filename));
+        FileOpened = false;
+        return;
+    }
 
-    sfb.open(filename.toStdString());
-    sfb.read();
+    if (sfb.read() != true)
+    {
+        QMessageBox::critical(this, "Error", QString("Error occurred while reading"));
+        FileOpened = false;
+        return;
+    }
     SetLineEdits();
     FileOpened = true;
     this->setWindowTitle(QString("SFB Editor - %1").arg(filename));

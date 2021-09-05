@@ -1,35 +1,31 @@
-cmake_minimum_required(VERSION 3.1.0)
+cmake_minimum_required(VERSION 3.16.0)
 
 project(sfb_editor)
 
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
 if (WIN32)
-	add_compile_definitions(_CRT_SECURE_NO_WARNINGS )
+	add_compile_definitions(_CRT_SECURE_NO_WARNINGS)
 endif()
 
-if (USEGUI)
-	set(CMAKE_AUTOMOC ON)
-	
-	if(CMAKE_VERSION VERSION_LESS "3.7.0")
-		set(CMAKE_INCLUDE_CURRENT_DIR ON)
-	endif()
-
+if (USEGUI)	
 	add_compile_definitions(USEGUI)
-	find_package(Qt5 COMPONENTS Core Widgets Gui)
-	
-	if (Qt5_FOUND)
-		message(STATUS "Qt5 found at ${Qt5_DIR}" )
-	else()
-		message("Couldn't find Qt5 please provide CMAKE_PREFIX_PATH in order to find Qt5")
-		message("Example:")
-		message("cmake .. -DUSEGUI=True -DCMAKE_PREFIX_PATH=D:/Qt/5.9.9/msvc2017_64\n")
-		message(FATAL_ERROR "Aborting cmake because i couldn't find qt please follow steps at above. It may be helpful.")
-	endif()
+	set(CMAKE_AUTOMOC ON)
 
+	find_package(QT NAMES Qt6 Qt5 COMPONENTS Core Widgets REQUIRED)
+	find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Core Widgets REQUIRED)
+	message(STATUS "Using Qt${QT_VERSION_MAJOR}")
+	
+	
 	if (WIN32)
 		set(QT_QMAKE_EXECUTABLE "${CMAKE_PREFIX_PATH}/bin/qmake.exe")
 		message(STATUS "QMake executable found at ${QT_QMAKE_EXECUTABLE}" )
 	endif()
 	
+	
+
+
 	add_executable(sfbeditor
 		source/sfb.cpp
 		source/sfb.h
@@ -37,8 +33,8 @@ if (USEGUI)
 		source/sfbgui.cpp
 		source/sfbgui.h
 	)
-	target_link_libraries(sfbeditor Qt5::Widgets Qt5::Core)
-
+	
+	target_link_libraries(sfbeditor Qt${QT_VERSION_MAJOR}::Widgets Qt${QT_VERSION_MAJOR}::Core)
 else()
 	add_executable(sfbeditor
 		source/sfb.cpp

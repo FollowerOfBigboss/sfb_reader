@@ -14,8 +14,8 @@ const QStringList PropList = {
 
 SFBGui::SFBGui()
 {
-    QMenu* menu = menuBar()->addMenu(tr("&File"));
-    QMenu* infomenu = menuBar()->addMenu(tr("&Info"));
+    QMenu* menu = menuBar()->addMenu("&File");
+    QMenu* infomenu = menuBar()->addMenu("&Info");
     
     QAction* aboutact = infomenu->addAction("About");
 
@@ -83,7 +83,7 @@ void SFBGui::OnActionOpen()
         FileCreateMode = false;
     }
 
-    QString filename = QFileDialog::getOpenFileName(this, "Open a sfb file", "", tr("sfb files(*.sfb *.SFB);; All Files(*.*)"));
+    QString filename = QFileDialog::getOpenFileName(this, "Open a sfb file", "", "sfb files(*.sfb *.SFB);; All Files(*.*)");
     if (filename.size() > 0)
     {
         if (sfb.open(filename.toStdString()) != true)

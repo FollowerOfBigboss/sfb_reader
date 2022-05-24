@@ -1,4 +1,5 @@
 #include <iostream>
+#include <cstring>
 #include "sfb.h"
 
 #ifdef USEGUI
